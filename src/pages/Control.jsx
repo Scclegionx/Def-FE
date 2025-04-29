@@ -18,7 +18,7 @@ const Control = () => {
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
         const key = e.key === ' ' ? 'Space' : e.key;
         setIsKeyPressed(prev => ({ ...prev, [key]: true }));
-        wsService.sendCommand({ command: key });
+        wsService.sendCommand(key);
       }
     };
 
@@ -26,7 +26,7 @@ const Control = () => {
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
         const key = e.key === ' ' ? 'Space' : e.key;
         setIsKeyPressed(prev => ({ ...prev, [key]: false }));
-        wsService.sendCommand({ command: 'STOP' });
+        wsService.sendCommand('STOP');
       }
     };
 
@@ -42,7 +42,7 @@ const Control = () => {
 
   const handleButtonPress = (direction) => {
     setIsKeyPressed(prev => ({ ...prev, [direction]: true }));
-    wsService.sendCommand({ command: direction });
+    wsService.sendCommand(direction);
   };
 
   const handleButtonRelease = () => {
@@ -53,7 +53,7 @@ const Control = () => {
       ArrowRight: false,
       Space: false
     }));
-    wsService.sendCommand({ command: 'STOP' });
+    wsService.sendCommand('STOP');
   };
 
   return (

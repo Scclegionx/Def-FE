@@ -10,10 +10,10 @@ wss.on('connection', function connection(ws) {
 
   ws.on('message', function incoming(message) {
     const data = JSON.parse(message);
-    console.log('Nhận được lệnh:', data.command.command);
+    console.log('Nhận được lệnh:', data.command);
     
     // Giả lập xử lý lệnh từ Arduino
-    switch(data.command.command) {
+    switch(data.command) {
       case 'ArrowUp':
         console.log('Arduino: Di chuyển lên');
         break;
