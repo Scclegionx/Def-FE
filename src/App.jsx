@@ -1,6 +1,9 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Control from './pages/Control';
+import ShootingHistory from './pages/statistics/ShootingHistory';
+import AmmoStatus from './pages/statistics/AmmoStatus';
+import RadarHistory from './pages/statistics/RadarHistory';
 import Sidebar from './components/layout/Sidebar';
 import './styles/main.css';
 
@@ -14,6 +17,9 @@ function App() {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/control" element={<Control />} />
+              <Route path="/statistics/shooting-history" element={<ShootingHistory />} />
+              <Route path="/statistics/ammo-status" element={<AmmoStatus />} />
+              <Route path="/statistics/radar-history" element={<RadarHistory />} />
             </Routes>
           </div>
         </div>
