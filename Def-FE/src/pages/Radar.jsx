@@ -1,15 +1,17 @@
 import { useEffect, useState, useRef } from 'react';
 import { wsService } from '../services/websocket';
+import { useNavigate } from 'react-router-dom';
 import '../styles/Radar.css';
 
 const MAX_DISTANCE = 200; // Khoảng cách tối đa (cm)
 
 const Radar = () => {
-  const [isConnected, setIsConnected] = useState(false);
+  const [isRadarOn, setIsRadarOn] = useState(localStorage.getItem('radarStatus') === 'on');
   const [radarData, setRadarData] = useState({ goc: 0, kc: 0 });
   const canvasRef = useRef(null);
   const animationFrameRef = useRef(null);
-  const lastPointsRef = useRef([]); // Lưu trữ các điểm phát hiện gần đây
+  const lastPointsRef = useRef([]);
+  const navigate = useNavigate();
 
   // Cleanup khi component unmount
   useEffect(() => {
@@ -17,51 +19,40 @@ const Radar = () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
-      if (isConnected) {
-        console.log('Radar: Đang ngắt kết nối WebSocket...');
-        wsService.disconnect();
-        setIsConnected(false);
-      }
     };
-  }, [isConnected]);
+  }, []);
 
-  // Xử lý kết nối WebSocket
+  // Kiểm tra đăng nhập và xử lý dữ liệu radar
   useEffect(() => {
-    if (isConnected) {
-      console.log('Radar: Đang kết nối WebSocket...');
-      wsService.connect('ws://localhost:8080');
-      wsService.onMessage((message) => {
-        try {
-          const data = JSON.parse(message);
-          if (data.radar) {
-            setRadarData(data.radar);
-            // Thêm điểm mới vào mảng lastPoints
-            lastPointsRef.current.push({
-              angle: data.radar.goc,
-              distance: data.radar.kc,
-              timestamp: Date.now()
-            });
-            // Giữ lại tối đa 50 điểm gần đây
-            if (lastPointsRef.current.length > 50) {
-              lastPointsRef.current.shift();
-            }
-          }
-        } catch (error) {
-          console.error('Lỗi phân tích dữ liệu:', error);
-        }
-      });
-    } else {
-      console.log('Radar: Đang ngắt kết nối WebSocket...');
-      wsService.disconnect();
+    if (!localStorage.getItem('isLoggedIn')) {
+      navigate('/login');
+      return;
     }
 
-    // Cleanup function
-    return () => {
-      console.log('Radar: Đang ngắt kết nối WebSocket (cleanup)...');
-      wsService.disconnect();
-    };
-  }, [isConnected]);
+    // Xử lý dữ liệu radar
+    wsService.onMessage((message) => {
+      try {
+        const data = JSON.parse(message);
+        if (data.radar) {
+          setRadarData(data.radar);
+          // Thêm điểm mới vào mảng lastPoints
+          lastPointsRef.current.push({
+            angle: data.radar.goc,
+            distance: data.radar.kc,
+            timestamp: Date.now()
+          });
+          // Giữ lại tối đa 50 điểm gần đây
+          if (lastPointsRef.current.length > 50) {
+            lastPointsRef.current.shift();
+          }
+        }
+      } catch (error) {
+        console.error('Lỗi phân tích dữ liệu:', error);
+      }
+    });
+  }, [navigate]);
 
+  // Vẽ radar
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
@@ -119,7 +110,7 @@ const Radar = () => {
         const age = now - point.timestamp;
         if (age < 5000) { // Chỉ hiển thị điểm trong 5 giây
           const angle = (point.angle * Math.PI) / 180;
-          const distance = (point.distance * radius) / MAX_DISTANCE; // Sử dụng MAX_DISTANCE
+          const distance = (point.distance * radius) / MAX_DISTANCE;
           const x = centerX + Math.cos(angle) * distance;
           const y = centerY - Math.sin(angle) * distance;
 
@@ -147,8 +138,18 @@ const Radar = () => {
     drawRadar();
   }, [radarData]);
 
-  const toggleConnection = () => {
-    setIsConnected(!isConnected);
+  const toggleRadar = () => {
+    if (isRadarOn) {
+      // Tắt radar
+      wsService.sendCommand('close_radar');
+      setIsRadarOn(false);
+      localStorage.setItem('radarStatus', 'off');
+    } else {
+      // Bật radar
+      wsService.sendCommand('open_radar');
+      setIsRadarOn(true);
+      localStorage.setItem('radarStatus', 'on');
+    }
   };
 
   return (
@@ -156,10 +157,10 @@ const Radar = () => {
       <h1 className="radar-title">Radar System</h1>
       <div className="radar-control">
         <button
-          className={`radar-button ${isConnected ? 'connected' : 'disconnected'}`}
-          onClick={toggleConnection}
+          className={`radar-button ${isRadarOn ? 'connected' : 'disconnected'}`}
+          onClick={toggleRadar}
         >
-          {isConnected ? 'Tắt Radar' : 'Bật Radar'}
+          {isRadarOn ? 'Tắt Radar' : 'Bật Radar'}
         </button>
       </div>
       <div className="radar-display">

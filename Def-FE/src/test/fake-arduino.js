@@ -40,19 +40,35 @@ function generateRadarData() {
 
 wss.on('connection', function connection(ws) {
   console.log('Client đã kết nối');
-
-  // Khởi tạo interval gửi dữ liệu radar mỗi 100ms
-  const radarInterval = setInterval(() => {
-    const radarData = generateRadarData();
-    ws.send(JSON.stringify(radarData));
-  }, 100);
+  let radarInterval = null;
+  let isRadarActive = false;
 
   ws.on('message', function incoming(message) {
     const data = JSON.parse(message);
     console.log('Nhận được lệnh:', data.command);
     
-    // Giả lập xử lý lệnh từ Arduino
+    // Xử lý lệnh từ client
     switch(data.command) {
+      case 'open_radar':
+        if (!isRadarActive) {
+          console.log('Bật radar');
+          isRadarActive = true;
+          radarInterval = setInterval(() => {
+            const radarData = generateRadarData();
+            ws.send(JSON.stringify(radarData));
+          }, 100);
+        }
+        break;
+      case 'close_radar':
+        if (isRadarActive) {
+          console.log('Tắt radar');
+          isRadarActive = false;
+          if (radarInterval) {
+            clearInterval(radarInterval);
+            radarInterval = null;
+          }
+        }
+        break;
       case 'ArrowUp':
         console.log('Arduino: Di chuyển lên');
         break;
@@ -78,6 +94,9 @@ wss.on('connection', function connection(ws) {
 
   ws.on('close', () => {
     console.log('Client đã ngắt kết nối');
-    clearInterval(radarInterval); // Dừng gửi dữ liệu khi client ngắt kết nối
+    if (radarInterval) {
+      clearInterval(radarInterval);
+      radarInterval = null;
+    }
   });
 });
