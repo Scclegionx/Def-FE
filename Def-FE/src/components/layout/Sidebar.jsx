@@ -33,6 +33,14 @@ const Sidebar = () => {
             </Link>
           </li>
           <li>
+            <Link
+              to="/radar"
+              className={`nav-link ${location.pathname === '/radar' ? 'active' : ''}`}
+            >
+              Radar
+            </Link>
+          </li>
+          <li>
             <div className="nav-dropdown">
               <button 
                 className={`nav-link ${isStatsOpen ? 'active' : ''}`}
