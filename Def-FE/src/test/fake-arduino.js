@@ -5,8 +5,47 @@ const wss = new WebSocketServer({ port: 8080 });
 
 console.log('Fake Arduino WebSocket server đang chạy tại ws://localhost:8080');
 
+// Các hằng số
+const MAX_DISTANCE = 200; // Khoảng cách tối đa (cm)
+const SCAN_SPEED = 2; // Tốc độ quét (độ/100ms)
+
+// Biến để theo dõi góc quét
+let currentAngle = 0;
+let isIncreasing = true; // Biến để xác định hướng quét
+
+// Hàm tạo dữ liệu radar giả lập
+function generateRadarData() {
+  // Cập nhật góc quét
+  if (isIncreasing) {
+    currentAngle += SCAN_SPEED;
+    if (currentAngle >= 180) {
+      currentAngle = 180;
+      isIncreasing = false;
+    }
+  } else {
+    currentAngle -= SCAN_SPEED;
+    if (currentAngle <= 0) {
+      currentAngle = 0;
+      isIncreasing = true;
+    }
+  }
+  
+  return {
+    radar: {
+      goc: currentAngle,
+      kc: Math.random() * MAX_DISTANCE // Sử dụng MAX_DISTANCE
+    }
+  };
+}
+
 wss.on('connection', function connection(ws) {
   console.log('Client đã kết nối');
+
+  // Khởi tạo interval gửi dữ liệu radar mỗi 100ms
+  const radarInterval = setInterval(() => {
+    const radarData = generateRadarData();
+    ws.send(JSON.stringify(radarData));
+  }, 100);
 
   ws.on('message', function incoming(message) {
     const data = JSON.parse(message);
@@ -39,5 +78,6 @@ wss.on('connection', function connection(ws) {
 
   ws.on('close', () => {
     console.log('Client đã ngắt kết nối');
+    clearInterval(radarInterval); // Dừng gửi dữ liệu khi client ngắt kết nối
   });
 });
