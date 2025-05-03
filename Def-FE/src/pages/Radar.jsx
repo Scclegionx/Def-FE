@@ -1,42 +1,58 @@
 import { useEffect, useState, useRef } from 'react';
 import { wsService } from '../services/websocket';
+import { useNavigate } from 'react-router-dom';
 import '../styles/Radar.css';
 
+const MAX_DISTANCE = 200; // Khoảng cách tối đa (cm)
+
 const Radar = () => {
-  const [isConnected, setIsConnected] = useState(false);
+  const [isRadarOn, setIsRadarOn] = useState(localStorage.getItem('radarStatus') === 'on');
   const [radarData, setRadarData] = useState({ goc: 0, kc: 0 });
   const canvasRef = useRef(null);
   const animationFrameRef = useRef(null);
+  const lastPointsRef = useRef([]);
+  const navigate = useNavigate();
 
+  // Cleanup khi component unmount
   useEffect(() => {
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
-      if (isConnected) {
-        wsService.disconnect();
-      }
     };
-  }, [isConnected]);
+  }, []);
 
+  // Kiểm tra đăng nhập và xử lý dữ liệu radar
   useEffect(() => {
-    if (isConnected) {
-      wsService.connect('ws://localhost:8080');
-      wsService.onMessage((message) => {
-        try {
-          const data = JSON.parse(message);
-          if (data.radar) {
-            setRadarData(data.radar);
-          }
-        } catch (error) {
-          console.error('Lỗi phân tích dữ liệu:', error);
-        }
-      });
-    } else {
-      wsService.disconnect();
+    if (!localStorage.getItem('isLoggedIn')) {
+      navigate('/login');
+      return;
     }
-  }, [isConnected]);
 
+    // Xử lý dữ liệu radar
+    wsService.onMessage((message) => {
+      try {
+        const data = JSON.parse(message);
+        if (data.radar) {
+          setRadarData(data.radar);
+          // Thêm điểm mới vào mảng lastPoints
+          lastPointsRef.current.push({
+            angle: data.radar.goc,
+            distance: data.radar.kc,
+            timestamp: Date.now()
+          });
+          // Giữ lại tối đa 50 điểm gần đây
+          if (lastPointsRef.current.length > 50) {
+            lastPointsRef.current.shift();
+          }
+        }
+      } catch (error) {
+        console.error('Lỗi phân tích dữ liệu:', error);
+      }
+    });
+  }, [navigate]);
+
+  // Vẽ radar
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
@@ -77,26 +93,44 @@ const Radar = () => {
         ctx.stroke();
       }
 
-      // Vẽ điểm phát hiện
-      if (radarData.kc > 0) {
-        const angle = (radarData.goc * Math.PI) / 180;
-        const distance = (radarData.kc * radius) / 100; // Giả sử khoảng cách tối đa là 100
-        const x = centerX + Math.cos(angle) * distance;
-        const y = centerY - Math.sin(angle) * distance;
+      // Vẽ tia quét
+      const currentAngle = (radarData.goc * Math.PI) / 180;
+      ctx.strokeStyle = 'rgba(0, 255, 0, 0.5)';
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.lineTo(
+        centerX + Math.cos(currentAngle) * radius,
+        centerY - Math.sin(currentAngle) * radius
+      );
+      ctx.stroke();
 
-        // Vẽ điểm
-        ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
-        ctx.beginPath();
-        ctx.arc(x, y, 5, 0, Math.PI * 2);
-        ctx.fill();
+      // Vẽ các điểm phát hiện
+      const now = Date.now();
+      lastPointsRef.current.forEach(point => {
+        const age = now - point.timestamp;
+        if (age < 5000) { // Chỉ hiển thị điểm trong 5 giây
+          const angle = (point.angle * Math.PI) / 180;
+          const distance = (point.distance * radius) / MAX_DISTANCE;
+          const x = centerX + Math.cos(angle) * distance;
+          const y = centerY - Math.sin(angle) * distance;
 
-        // Vẽ đường kẻ từ tâm đến điểm
-        ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
-        ctx.beginPath();
-        ctx.moveTo(centerX, centerY);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-      }
+          // Độ trong suốt giảm dần theo thời gian
+          const opacity = 1 - (age / 5000);
+          
+          // Vẽ điểm
+          ctx.fillStyle = `rgba(255, 0, 0, ${opacity * 0.8})`;
+          ctx.beginPath();
+          ctx.arc(x, y, 5, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Vẽ đường kẻ từ tâm đến điểm
+          ctx.strokeStyle = `rgba(255, 0, 0, ${opacity * 0.5})`;
+          ctx.beginPath();
+          ctx.moveTo(centerX, centerY);
+          ctx.lineTo(x, y);
+          ctx.stroke();
+        }
+      });
 
       animationFrameRef.current = requestAnimationFrame(drawRadar);
     };
@@ -104,8 +138,18 @@ const Radar = () => {
     drawRadar();
   }, [radarData]);
 
-  const toggleConnection = () => {
-    setIsConnected(!isConnected);
+  const toggleRadar = () => {
+    if (isRadarOn) {
+      // Tắt radar
+      wsService.sendCommand('close_radar');
+      setIsRadarOn(false);
+      localStorage.setItem('radarStatus', 'off');
+    } else {
+      // Bật radar
+      wsService.sendCommand('open_radar');
+      setIsRadarOn(true);
+      localStorage.setItem('radarStatus', 'on');
+    }
   };
 
   return (
@@ -113,10 +157,10 @@ const Radar = () => {
       <h1 className="radar-title">Radar System</h1>
       <div className="radar-control">
         <button
-          className={`radar-button ${isConnected ? 'connected' : 'disconnected'}`}
-          onClick={toggleConnection}
+          className={`radar-button ${isRadarOn ? 'connected' : 'disconnected'}`}
+          onClick={toggleRadar}
         >
-          {isConnected ? 'Tắt Radar' : 'Bật Radar'}
+          {isRadarOn ? 'Tắt Radar' : 'Bật Radar'}
         </button>
       </div>
       <div className="radar-display">
@@ -130,6 +174,7 @@ const Radar = () => {
       <div className="radar-info">
         <p>Góc: {radarData.goc}°</p>
         <p>Khoảng cách: {radarData.kc}cm</p>
+        <p>Khoảng cách tối đa: {MAX_DISTANCE}cm</p>
       </div>
     </div>
   );

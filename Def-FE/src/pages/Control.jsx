@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { wsService } from '../services/websocket';
+import { useNavigate } from 'react-router-dom';
 
 const Control = () => {
   const [isKeyPressed, setIsKeyPressed] = useState({
@@ -9,10 +10,14 @@ const Control = () => {
     ArrowRight: false,
     Space: false
   });
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Connect to WebSocket server
-    wsService.connect('ws://localhost:8080');
+    // Kiểm tra đăng nhập
+    if (!localStorage.getItem('isLoggedIn')) {
+      navigate('/login');
+      return;
+    }
 
     const handleKeyDown = (e) => {
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
@@ -36,9 +41,8 @@ const Control = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
-      wsService.disconnect();
     };
-  }, []);
+  }, [navigate]);
 
   const handleButtonPress = (direction) => {
     setIsKeyPressed(prev => ({ ...prev, [direction]: true }));
