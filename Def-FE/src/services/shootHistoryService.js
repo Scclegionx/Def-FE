@@ -21,6 +21,20 @@ const shootHistoryService = {
     } catch (error) {
       throw error.response?.data || { message: 'Lỗi khi lấy lịch sử bắn' };
     }
+  },
+
+  async getRemainingBullets() {
+    try {
+      const response = await axios.get(`${API_URL}/bullet/first`);
+      
+      if (response.data.status === 'success') {
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message);
+      }
+    } catch (error) {
+      throw error.response?.data || { message: 'Lỗi khi lấy số đạn còn lại' };
+    }
   }
 };
 

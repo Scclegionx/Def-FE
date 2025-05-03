@@ -8,9 +8,11 @@ const ShootingHistory = () => {
   const [page, setPage] = useState(1);
   const [size] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
+  const [remainingBullets, setRemainingBullets] = useState(null);
 
   useEffect(() => {
     fetchHistory();
+    fetchRemainingBullets();
   }, [page]);
 
   const fetchHistory = async () => {
@@ -24,6 +26,16 @@ const ShootingHistory = () => {
       setError(error.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRemainingBullets = async () => {
+    try {
+      const data = await shootHistoryService.getRemainingBullets();
+      setRemainingBullets(data?.number || 0);
+    } catch (error) {
+      console.error('Lỗi khi lấy số đạn còn lại:', error);
+      setRemainingBullets(0);
     }
   };
 
@@ -57,6 +69,10 @@ const ShootingHistory = () => {
         <div className="summary-card">
           <h3>Tỷ lệ trúng</h3>
           <p>{hitRate}%</p>
+        </div>
+        <div className="summary-card bullets-card">
+          <h3>Đạn còn lại trong kho</h3>
+          <p className="bullets-count">{remainingBullets !== null ? remainingBullets : 'Đang tải...'}</p>
         </div>
       </div>
 
