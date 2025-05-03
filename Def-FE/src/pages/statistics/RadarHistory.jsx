@@ -1,61 +1,97 @@
+import React, { useState, useEffect } from 'react';
+import radarHistoryService from '../../services/radarHistoryService';
+
 const RadarHistory = () => {
-  // Mock data for radar history
-  const radarHistory = [
-    {
-      id: 1,
-      date: '2024-03-15 14:30:00',
-      action: 'Radar Activated',
-      status: 'Active',
-      operator: 'Operator A'
-    },
-    {
-      id: 2,
-      date: '2024-03-15 14:25:00',
-      action: 'Radar Deactivated',
-      status: 'Inactive',
-      operator: 'Operator A'
-    },
-    {
-      id: 3,
-      date: '2024-03-15 14:20:00',
-      action: 'Radar Activated',
-      status: 'Active',
-      operator: 'Operator B'
-    },
-    {
-      id: 4,
-      date: '2024-03-15 14:15:00',
-      action: 'Radar Deactivated',
-      status: 'Inactive',
-      operator: 'Operator B'
-    },
-    {
-      id: 5,
-      date: '2024-03-15 14:10:00',
-      action: 'Radar Activated',
-      status: 'Active',
-      operator: 'Operator A'
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [page, setPage] = useState(1);
+  const [size] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    fetchHistory();
+  }, [page]);
+
+  const fetchHistory = async () => {
+    try {
+      setLoading(true);
+      const response = await radarHistoryService.getDiscoveryHistory(page, size);
+      setHistory(response.data);
+      setTotalPages(Math.ceil(response.total / size));
+      setError('');
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const getMethodText = (method) => {
+    if (!method) return 'Chưa xác định';
+    switch(method.toLowerCase()) {
+      case 'radar':
+        return 'Radar';
+      case 'camera':
+        return 'Camera';
+      default:
+        return 'Chưa xác định';
+    }
+  };
 
   return (
     <div className="statistics-container">
-      <h1 className="statistics-title">Radar History</h1>
-      <div className="timeline">
-        {radarHistory.map((event) => (
-          <div key={event.id} className="timeline-item">
-            <div className="timeline-content">
-              <div className="timeline-date">{event.date}</div>
-              <div className="timeline-text">
-                <strong>{event.action}</strong> by {event.operator}
-              </div>
-              <div className={`status-badge ${event.status.toLowerCase()}`}>
-                {event.status}
-              </div>
+      <h1 className="statistics-title">Lịch Sử Phát Hiện</h1>
+      
+      {error && <div className="error-message">{error}</div>}
+      
+      {loading ? (
+        <div className="loading">Đang tải dữ liệu...</div>
+      ) : (
+        <>
+          <table className="statistics-table">
+            <thead>
+              <tr>
+                <th>Thời gian</th>
+                <th>Khoảng cách</th>
+                <th>Phương thức phát hiện</th>
+              </tr>
+            </thead>
+            <tbody>
+              {history.map((record) => (
+                <tr key={record.id}>
+                  <td>{record.time || 'Chưa xác định'}</td>
+                  <td>{record.distance ? `${record.distance}m` : 'Chưa xác định'}</td>
+                  <td>
+                    <span className={`method-badge ${record.method?.toLowerCase()}`}>
+                      {getMethodText(record.method)}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Phân trang - chỉ hiển thị khi có nhiều hơn 1 trang */}
+          {totalPages > 1 && (
+            <div className="pagination">
+              <button 
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                Trang trước
+              </button>
+              <span>Trang {page} / {totalPages}</span>
+              <button 
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+              >
+                Trang sau
+              </button>
             </div>
-          </div>
-        ))}
-      </div>
+          )}
+        </>
+      )}
     </div>
   );
 };
