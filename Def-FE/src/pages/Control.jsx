@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { wsService } from '../services/websocket';
 import { useNavigate } from 'react-router-dom';
 import voiceCommandService from '../services/voiceCommandService';
+import shootHistoryService from '../services/shootHistoryService';
 
 const Control = () => {
   const [isKeyPressed, setIsKeyPressed] = useState({
@@ -34,7 +35,7 @@ const Control = () => {
       recognition.lang = 'vi-VN';
 
       recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
+        const transcript = event.results[0][0].transcript.toLowerCase();
         console.log('Kết quả nhận diện giọng nói:', transcript);
         setVoiceCommand(transcript);
         handleVoiceCommand(transcript);
@@ -56,11 +57,31 @@ const Control = () => {
       setError('Trình duyệt của bạn không hỗ trợ nhận diện giọng nói');
     }
 
+    // Lắng nghe tin nhắn từ websocket
+    const handleWebSocketMessage = (message) => {
+      try {
+        const data = JSON.parse(message);
+        if (data.received === true) {
+          // Lưu lịch sử bắn
+          const username = localStorage.getItem('username');
+          shootHistoryService.saveShootHistory(username, 'success');
+        }
+      } catch (error) {
+        console.error('Lỗi khi xử lý tin nhắn websocket:', error);
+      }
+    };
+
+    wsService.onMessage(handleWebSocketMessage);
+
     const handleKeyDown = (e) => {
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
         const key = e.key === ' ' ? 'Space' : e.key;
         setIsKeyPressed(prev => ({ ...prev, [key]: true }));
-        wsService.sendCommand(key);
+        if (key === 'Space') {
+          handleShoot();
+        } else {
+          wsService.sendCommand(key);
+        }
       }
     };
 
@@ -68,7 +89,9 @@ const Control = () => {
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
         const key = e.key === ' ' ? 'Space' : e.key;
         setIsKeyPressed(prev => ({ ...prev, [key]: false }));
-        wsService.sendCommand('STOP');
+        if (key !== 'Space') {
+          wsService.sendCommand('STOP');
+        }
       }
     };
 
@@ -78,19 +101,39 @@ const Control = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
+      wsService.offMessage(handleWebSocketMessage);
     };
   }, [navigate]);
+
+  const handleShoot = async () => {
+    try {
+      // Nạp đạn trước khi bắn
+      await shootHistoryService.reload();
+      // Gửi lệnh bắn qua websocket
+      wsService.sendCommand('Space');
+    } catch (error) {
+      console.error('Lỗi khi bắn:', error);
+      setError('Lỗi khi bắn: ' + error.message);
+    }
+  };
 
   const handleVoiceCommand = async (command) => {
     try {
       console.log('Xử lý lệnh giọng nói:', command);
-      if (command.toLowerCase().includes('bắn')) {
-        console.log('Phát hiện lệnh bắn, gửi lệnh đến backend...');
-        await voiceCommandService.sendVoiceCommand(command);
-        wsService.sendCommand('Space');
-        console.log('Đã gửi lệnh bắn thành công');
-      } else {
-        console.log('Không phát hiện lệnh bắn trong câu nói');
+      
+      // Xử lý các lệnh di chuyển
+      if (command.includes('lên')) {
+        await voiceCommandService.sendVoiceCommand('ArrowUp');
+      } else if (command.includes('xuống')) {
+        await voiceCommandService.sendVoiceCommand('ArrowDown');
+      } else if (command.includes('trái')) {
+        await voiceCommandService.sendVoiceCommand('ArrowLeft');
+      } else if (command.includes('phải')) {
+        await voiceCommandService.sendVoiceCommand('ArrowRight');
+      } else if (command.includes('bắn')) {
+        await handleShoot();
+      } else if (command.includes('dừng')) {
+        await voiceCommandService.sendVoiceCommand('STOP');
       }
     } catch (error) {
       console.error('Lỗi khi xử lý lệnh giọng nói:', error);
@@ -113,9 +156,13 @@ const Control = () => {
     }
   };
 
-  const handleButtonPress = (direction) => {
+  const handleButtonPress = async (direction) => {
     setIsKeyPressed(prev => ({ ...prev, [direction]: true }));
-    wsService.sendCommand(direction);
+    if (direction === 'Space') {
+      await handleShoot();
+    } else {
+      wsService.sendCommand(direction);
+    }
   };
 
   const handleButtonRelease = () => {
@@ -214,6 +261,7 @@ const Control = () => {
         <p>Press SPACE or click FIRE button to shoot</p>
         <p>Hold to continue movement, release to stop</p>
         <p>Or use voice command by clicking the microphone button</p>
+        <p>Các lệnh giọng nói: "lên", "xuống", "trái", "phải", "bắn", "dừng"</p>
       </div>
     </div>
   );

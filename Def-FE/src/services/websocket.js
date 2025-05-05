@@ -49,6 +49,10 @@ class WebSocketService {
     this.onMessageCallback = callback;
   }
 
+  offMessage() {
+    this.onMessageCallback = null;
+  }
+
   // Kiểm tra trạng thái kết nối
   isConnected() {
     return this.ws && this.ws.readyState === WebSocket.OPEN;

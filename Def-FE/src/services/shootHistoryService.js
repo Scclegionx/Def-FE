@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://127.0.0.1:5000';
+const API_URL = 'http://localhost:5000';
 
 const shootHistoryService = {
   async getShootHistory(page = 1, size = 10) {
@@ -34,6 +34,44 @@ const shootHistoryService = {
       }
     } catch (error) {
       throw error.response?.data || { message: 'Lỗi khi lấy số đạn còn lại' };
+    }
+  },
+
+  async saveShootHistory(username, status) {
+    try {
+      const response = await fetch(`${API_URL}/save-shoot-history`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username,
+          status
+        })
+      });
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Lỗi khi lưu lịch sử bắn:', error);
+      throw error;
+    }
+  },
+
+  async reload() {
+    try {
+      const response = await fetch(`${API_URL}/reload`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Lỗi khi nạp đạn:', error);
+      throw error;
     }
   }
 };
