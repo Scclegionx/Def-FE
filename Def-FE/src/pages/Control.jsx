@@ -73,10 +73,20 @@ const Control = () => {
     const handleWebSocketMessage = (message) => {
       try {
         const data = JSON.parse(message);
-        if (data.received === true) {
+        console.log('Nhận tin nhắn websocket:', data);
+        
+        if (data.checkFiringStatus === true) {
           // Lưu lịch sử bắn
           const username = localStorage.getItem('username');
-          shootHistoryService.saveShootHistory(username, 'success');
+          console.log('Đang lưu lịch sử bắn cho user:', username);
+          shootHistoryService.saveShootHistory(username, 'success')
+            .then(response => {
+              console.log('Lưu lịch sử bắn thành công:', response);
+            })
+            .catch(error => {
+              console.error('Lỗi khi lưu lịch sử bắn:', error);
+            });
+          
           // Cập nhật trạng thái đạn sau khi bắn thành công
           setIsLoaded(false);
           localStorage.setItem('isLoaded', 'false');
