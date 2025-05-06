@@ -16,7 +16,19 @@ const Control = () => {
   const [recognition, setRecognition] = useState(null);
   const [voiceCommand, setVoiceCommand] = useState('');
   const [error, setError] = useState('');
+  const [isLoaded, setIsLoaded] = useState(localStorage.getItem('isLoaded') === 'true');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setIsLoaded(localStorage.getItem('isLoaded') === 'true');
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   useEffect(() => {
     // Kiểm tra đăng nhập
@@ -65,6 +77,9 @@ const Control = () => {
           // Lưu lịch sử bắn
           const username = localStorage.getItem('username');
           shootHistoryService.saveShootHistory(username, 'success');
+          // Cập nhật trạng thái đạn sau khi bắn thành công
+          setIsLoaded(false);
+          localStorage.setItem('isLoaded', 'false');
         }
       } catch (error) {
         console.error('Lỗi khi xử lý tin nhắn websocket:', error);
@@ -77,9 +92,9 @@ const Control = () => {
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
         const key = e.key === ' ' ? 'Space' : e.key;
         setIsKeyPressed(prev => ({ ...prev, [key]: true }));
-        if (key === 'Space') {
+        if (key === 'Space' && isLoaded) {
           handleShoot();
-        } else {
+        } else if (key !== 'Space') {
           wsService.sendCommand(key);
         }
       }
@@ -103,17 +118,35 @@ const Control = () => {
       window.removeEventListener('keyup', handleKeyUp);
       wsService.offMessage(handleWebSocketMessage);
     };
-  }, [navigate]);
+  }, [navigate, isLoaded]);
 
   const handleShoot = async () => {
     try {
-      // Nạp đạn trước khi bắn
-      await shootHistoryService.reload();
+      if (!isLoaded) {
+        setError('Vui lòng nạp đạn trước khi bắn');
+        return;
+      }
       // Gửi lệnh bắn qua websocket
       wsService.sendCommand('Space');
+      // Đánh dấu đã bắn
+      setIsLoaded(false);
+      localStorage.setItem('isLoaded', 'false');
     } catch (error) {
       console.error('Lỗi khi bắn:', error);
       setError('Lỗi khi bắn: ' + error.message);
+    }
+  };
+
+  const handleReload = async () => {
+    try {
+      // Nạp đạn
+      await shootHistoryService.reload();
+      setIsLoaded(true);
+      localStorage.setItem('isLoaded', 'true');
+      setError('');
+    } catch (error) {
+      console.error('Lỗi khi nạp đạn:', error);
+      setError('Lỗi khi nạp đạn: ' + error.message);
     }
   };
 
@@ -157,6 +190,9 @@ const Control = () => {
   };
 
   const handleButtonPress = async (direction) => {
+    if (direction === 'Space' && !isLoaded) {
+      return;
+    }
     setIsKeyPressed(prev => ({ ...prev, [direction]: true }));
     if (direction === 'Space') {
       await handleShoot();
@@ -230,12 +266,22 @@ const Control = () => {
         <div className="control-row">
           <div className="control-col">
             <button
-              className={`control-button fire-button ${isKeyPressed.Space ? 'active' : ''}`}
-              onMouseDown={() => handleButtonPress('Space')}
+              className={`control-button fire-button ${isKeyPressed.Space ? 'active' : ''} ${!isLoaded ? 'disabled' : ''}`}
+              onMouseDown={() => isLoaded && handleButtonPress('Space')}
               onMouseUp={handleButtonRelease}
               onMouseLeave={handleButtonRelease}
+              disabled={!isLoaded}
+              style={{ pointerEvents: isLoaded ? 'auto' : 'none' }}
             >
               FIRE
+            </button>
+          </div>
+          <div className="control-col">
+            <button
+              className="control-button reload-button"
+              onClick={handleReload}
+            >
+              NẠP ĐẠN
             </button>
           </div>
         </div>

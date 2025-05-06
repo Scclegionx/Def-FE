@@ -3,7 +3,7 @@ import { wsService } from '../services/websocket';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Radar.css';
 
-const MAX_DISTANCE = 200; // Khoảng cách tối đa (cm)
+const MAX_DISTANCE = 100; // Khoảng cách tối đa (cm)
 
 const Radar = () => {
   const [isRadarOn, setIsRadarOn] = useState(localStorage.getItem('radarStatus') === 'on');

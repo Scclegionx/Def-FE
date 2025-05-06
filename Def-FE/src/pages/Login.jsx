@@ -26,7 +26,7 @@ const Login = () => {
       if (response.status === 'success') {
         // Kết nối WebSocket sau khi đăng nhập thành công
         try {
-          await wsService.connect('ws://localhost:8080');
+          await wsService.connect('ws://192.168.3.173:8080');
           navigate('/');
         } catch (error) {
           console.error('Lỗi kết nối WebSocket:', error);

@@ -1,0 +1,23 @@
+.control-button.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #cccccc;
+}
+
+.fire-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #cccccc;
+}
+
+.reload-button {
+  background-color: #4CAF50;
+  color: white;
+  font-weight: bold;
+}
+
+.reload-button:hover {
+  background-color: #45a049;
+} 

@@ -70,7 +70,7 @@ body {
 /* Main Content Styles */
 .main-content {
   flex: 1;
-  margin-left: 860px;
+  margin-left: 300px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
