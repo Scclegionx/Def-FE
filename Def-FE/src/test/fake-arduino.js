@@ -6,7 +6,7 @@ const wss = new WebSocketServer({ port: 8080 });
 console.log('Fake Arduino WebSocket server đang chạy tại ws://localhost:8080');
 
 // Các hằng số
-const MAX_DISTANCE = 200; // Khoảng cách tối đa (cm)
+const MAX_DISTANCE = 100; // Khoảng cách tối đa (cm)
 const SCAN_SPEED = 2; // Tốc độ quét (độ/100ms)
 
 // Biến để theo dõi góc quét

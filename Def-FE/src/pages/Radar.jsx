@@ -1,13 +1,16 @@
 import { useEffect, useState, useRef } from 'react';
 import { wsService } from '../services/websocket';
 import { useNavigate } from 'react-router-dom';
+import radarHistoryService from '../services/radarHistoryService';
 import '../styles/Radar.css';
 
 const MAX_DISTANCE = 100; // Khoảng cách tối đa (cm)
+const MIN_DISTANCE_TO_SAVE = 20; // Khoảng cách tối thiểu để lưu lịch sử (cm)
 
 const Radar = () => {
   const [isRadarOn, setIsRadarOn] = useState(localStorage.getItem('radarStatus') === 'on');
   const [radarData, setRadarData] = useState({ goc: 0, kc: 0 });
+  const [error, setError] = useState('');
   const canvasRef = useRef(null);
   const animationFrameRef = useRef(null);
   const lastPointsRef = useRef([]);
@@ -35,19 +38,34 @@ const Radar = () => {
         const data = JSON.parse(message);
         if (data.radar) {
           setRadarData(data.radar);
+          
           // Thêm điểm mới vào mảng lastPoints
           lastPointsRef.current.push({
             angle: data.radar.goc,
             distance: data.radar.kc,
             timestamp: Date.now()
           });
+          
           // Giữ lại tối đa 50 điểm gần đây
           if (lastPointsRef.current.length > 50) {
             lastPointsRef.current.shift();
           }
+
+          // Lưu lịch sử nếu khoảng cách dưới 20cm
+          if (data.radar.kc < MIN_DISTANCE_TO_SAVE) {
+            radarHistoryService.saveDiscoveryHistory(data.radar.kc)
+              .then(response => {
+                console.log('Lưu lịch sử phát hiện thành công:', response);
+              })
+              .catch(error => {
+                console.error('Lỗi khi lưu lịch sử phát hiện:', error);
+                setError('Lỗi khi lưu lịch sử phát hiện');
+              });
+          }
         }
       } catch (error) {
         console.error('Lỗi phân tích dữ liệu:', error);
+        setError('Lỗi khi xử lý dữ liệu radar');
       }
     });
   }, [navigate]);
@@ -155,6 +173,7 @@ const Radar = () => {
   return (
     <div className="radar-container">
       <h1 className="radar-title">Radar System</h1>
+      {error && <div className="error-message">{error}</div>}
       <div className="radar-control">
         <button
           className={`radar-button ${isRadarOn ? 'connected' : 'disconnected'}`}
