@@ -5,7 +5,8 @@ import radarHistoryService from '../services/radarHistoryService';
 import '../styles/Radar.css';
 
 const MAX_DISTANCE = 100; // Khoảng cách tối đa (cm)
-const MIN_DISTANCE_TO_SAVE = 20; // Khoảng cách tối thiểu để lưu lịch sử (cm)
+const MIN_DISTANCE_TO_SAVE = 1; // Khoảng cách tối thiểu để lưu lịch sử (cm)
+const MAX_DISTANCE_TO_SAVE = 20; // Khoảng cách tối đa để lưu lịch sử (cm)
 
 const Radar = () => {
   const [isRadarOn, setIsRadarOn] = useState(localStorage.getItem('radarStatus') === 'on');
@@ -37,12 +38,18 @@ const Radar = () => {
       try {
         const data = JSON.parse(message);
         if (data.radar) {
-          setRadarData(data.radar);
+          // Xử lý khoảng cách âm
+          const distance = data.radar.kc < 0 ? 0 : data.radar.kc;
+          
+          setRadarData({
+            goc: data.radar.goc,
+            kc: distance
+          });
           
           // Thêm điểm mới vào mảng lastPoints
           lastPointsRef.current.push({
             angle: data.radar.goc,
-            distance: data.radar.kc,
+            distance: distance,
             timestamp: Date.now()
           });
           
@@ -51,9 +58,9 @@ const Radar = () => {
             lastPointsRef.current.shift();
           }
 
-          // Lưu lịch sử nếu khoảng cách dưới 20cm
-          if (data.radar.kc < MIN_DISTANCE_TO_SAVE) {
-            radarHistoryService.saveDiscoveryHistory(data.radar.kc)
+          // Lưu lịch sử nếu khoảng cách từ 1-20cm
+          if (distance >= MIN_DISTANCE_TO_SAVE && distance <= MAX_DISTANCE_TO_SAVE) {
+            radarHistoryService.saveDiscoveryHistory(distance)
               .then(response => {
                 console.log('Lưu lịch sử phát hiện thành công:', response);
               })
