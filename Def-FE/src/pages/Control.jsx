@@ -51,7 +51,27 @@ const Control = () => {
         const transcript = event.results[0][0].transcript.toLowerCase();
         console.log('Kết quả nhận diện giọng nói:', transcript);
         setVoiceCommand(transcript);
-        handleVoiceCommand(transcript);
+        
+        // Xử lý lệnh trực tiếp
+        if (transcript.includes('lên')) {
+          wsService.sendCommand('ArrowUp');
+        } else if (transcript.includes('xuống')) {
+          wsService.sendCommand('ArrowDown');
+        } else if (transcript.includes('trái')) {
+          wsService.sendCommand('ArrowLeft');
+        } else if (transcript.includes('phải')) {
+          wsService.sendCommand('ArrowRight');
+        } else if (transcript.includes('bắn')) {
+          if (isLoaded) {
+            handleShoot();
+          } else {
+            setError('Vui lòng nạp đạn trước khi bắn');
+          }
+        } else if (transcript.includes('dừng')) {
+          wsService.sendCommand('STOP');
+        } else if (transcript.includes('nạp đạn')) {
+          handleReload();
+        }
       };
 
       recognition.onerror = (event) => {
@@ -166,30 +186,6 @@ const Control = () => {
     } catch (error) {
       console.error('Lỗi khi nạp đạn:', error);
       setError('Lỗi khi nạp đạn: ' + error.message);
-    }
-  };
-
-  const handleVoiceCommand = async (command) => {
-    try {
-      console.log('Xử lý lệnh giọng nói:', command);
-      
-      // Xử lý các lệnh di chuyển
-      if (command.includes('lên')) {
-        await voiceCommandService.sendVoiceCommand('ArrowUp');
-      } else if (command.includes('xuống')) {
-        await voiceCommandService.sendVoiceCommand('ArrowDown');
-      } else if (command.includes('trái')) {
-        await voiceCommandService.sendVoiceCommand('ArrowLeft');
-      } else if (command.includes('phải')) {
-        await voiceCommandService.sendVoiceCommand('ArrowRight');
-      } else if (command.includes('bắn')) {
-        await handleShoot();
-      } else if (command.includes('dừng')) {
-        await voiceCommandService.sendVoiceCommand('STOP');
-      }
-    } catch (error) {
-      console.error('Lỗi khi xử lý lệnh giọng nói:', error);
-      setError(error.message);
     }
   };
 
@@ -326,7 +322,7 @@ const Control = () => {
         <p>Nhấn SPACE hoặc nút BẮN để bắn</p>
         <p>Giữ để di chuyển liên tục, thả ra để dừng</p>
         <p>Hoặc sử dụng lệnh giọng nói bằng cách nhấn nút micro</p>
-        <p>Các lệnh giọng nói: "lên", "xuống", "trái", "phải", "bắn", "dừng"</p>
+        <p>Các lệnh giọng nói: "lên", "xuống", "trái", "phải", "bắn", "nạp đạn"</p>
       </div>
     </div>
   );
