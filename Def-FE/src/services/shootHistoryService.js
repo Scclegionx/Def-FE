@@ -23,6 +23,20 @@ const shootHistoryService = {
     }
   },
 
+  async getTotalShootHistory() {
+    try {
+      const response = await axios.get(`${API_URL}/shoot-history/total`);
+      
+      if (response.data.status === 'success') {
+        return response.data.total;
+      } else {
+        throw new Error(response.data.message);
+      }
+    } catch (error) {
+      throw error.response?.data || { message: 'Lỗi khi lấy tổng số bản ghi' };
+    }
+  },
+
   async getRemainingBullets() {
     try {
       const response = await axios.get(`${API_URL}/bullet/first`);

@@ -9,7 +9,22 @@ const ShootingHistory = () => {
   const [page, setPage] = useState(1);
   const [size] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [remainingBullets, setRemainingBullets] = useState(null);
+
+  // Lấy tổng số bản ghi
+  useEffect(() => {
+    const fetchTotal = async () => {
+      try {
+        const total = await shootHistoryService.getTotalShootHistory();
+        setTotalItems(total);
+        setTotalPages(Math.ceil(total / size));
+      } catch (error) {
+        console.error('Lỗi khi lấy tổng số bản ghi:', error);
+      }
+    };
+    fetchTotal();
+  }, []);
 
   useEffect(() => {
     fetchHistory();
@@ -21,7 +36,6 @@ const ShootingHistory = () => {
       setLoading(true);
       const response = await shootHistoryService.getShootHistory(page, size);
       setHistory(response.data);
-      setTotalPages(Math.ceil(response.total / size));
       setError('');
     } catch (error) {
       setError(error.message);
@@ -55,6 +69,26 @@ const ShootingHistory = () => {
     return status === 'Thành công' ? 'Thành công' : 'Thất bại';
   };
 
+  // Hàm format thời gian
+  const formatTime = (timeStr) => {
+    if (!timeStr) return 'Chưa xác định';
+    try {
+      const date = new Date(timeStr);
+      return date.toLocaleString('vi-VN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      });
+    } catch (error) {
+      console.error('Lỗi khi format thời gian:', error);
+      return 'Chưa xác định';
+    }
+  };
+
   return (
     <div className="statistics-container">
       <h1 className="statistics-title">Lịch Sử Bắn</h1>
@@ -82,6 +116,10 @@ const ShootingHistory = () => {
         <div className="loading">Đang tải dữ liệu...</div>
       ) : (
         <>
+          <div className="statistics-summary">
+            <p>Tổng số bản ghi: {totalItems}</p>
+          </div>
+
           <table className="statistics-table">
             <thead>
               <tr>
@@ -93,7 +131,7 @@ const ShootingHistory = () => {
             <tbody>
               {history.map((record) => (
                 <tr key={record.id}>
-                  <td>{record.time || 'Chưa xác định'}</td>
+                  <td>{formatTime(record.time)}</td>
                   <td>{record.username || 'Chưa xác định'}</td>
                   <td>
                     <span className={`result-badge ${getResultClass(record.status)}`}>
@@ -105,7 +143,7 @@ const ShootingHistory = () => {
             </tbody>
           </table>
 
-          {/* Phân trang - chỉ hiển thị khi có nhiều hơn 1 trang */}
+          {/* Phân trang */}
           {totalPages > 1 && (
             <div className="pagination">
               <button 
