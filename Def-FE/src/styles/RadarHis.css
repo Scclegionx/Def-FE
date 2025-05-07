@@ -1,0 +1,109 @@
+.statistics-container {
+  padding: 24px;
+  background: #f5f6fa;
+  min-height: 100vh;
+}
+
+.statistics-title {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.error-message {
+  background: #ff7675;
+  color: #fff;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.loading {
+  text-align: center;
+  color: #636e72;
+  font-size: 1.2rem;
+  margin: 24px 0;
+}
+
+/* Bảng lịch sử */
+.statistics-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 24px;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.statistics-table th,
+.statistics-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #dfe6e9;
+}
+
+.statistics-table th {
+  background: #636e72;
+  color: #fff;
+  font-weight: bold;
+}
+
+.method-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.method-badge.radar {
+  background: #0984e3;
+  color: #fff;
+}
+
+.method-badge.camera {
+  background: #00b894;
+  color: #fff;
+}
+
+/* Phân trang */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.pagination button {
+  padding: 8px 16px;
+  background: #636e72;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pagination button:hover {
+  background: #2d3436;
+}
+
+.pagination button:disabled {
+  background: #b2bec3;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  color: #636e72;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .statistics-table {
+    font-size: 0.9rem;
+  }
+}

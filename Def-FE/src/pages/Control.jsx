@@ -3,6 +3,7 @@ import { wsService } from '../services/websocket';
 import { useNavigate } from 'react-router-dom';
 import voiceCommandService from '../services/voiceCommandService';
 import shootHistoryService from '../services/shootHistoryService';
+import '../styles/Control.css';
 
 const Control = () => {
   const [isKeyPressed, setIsKeyPressed] = useState({
@@ -74,12 +75,12 @@ const Control = () => {
       try {
         const data = JSON.parse(message);
         console.log('Nhận tin nhắn websocket:', data);
-        
+        console.log('checkFiringStatus:', data.checkFiringStatus);
         if (data.checkFiringStatus === true) {
           // Lưu lịch sử bắn
           const username = localStorage.getItem('username');
           console.log('Đang lưu lịch sử bắn cho user:', username);
-          shootHistoryService.saveShootHistory(username, 'success')
+          shootHistoryService.saveShootHistory(username, 'Thành công')
             .then(response => {
               console.log('Lưu lịch sử bắn thành công:', response);
             })
@@ -90,6 +91,14 @@ const Control = () => {
           // Cập nhật trạng thái đạn sau khi bắn thành công
           setIsLoaded(false);
           localStorage.setItem('isLoaded', 'false');
+        } else {
+          shootHistoryService.saveShootHistory(username, 'Thất bại')
+            .then(response => {
+              console.log('Lưu lịch sử bắn thành công:', response);
+            })
+            .catch(error => {
+              console.error('Lỗi khi lưu lịch sử bắn:', error);
+            });
         }
       } catch (error) {
         console.error('Lỗi khi xử lý tin nhắn websocket:', error);
@@ -224,7 +233,7 @@ const Control = () => {
 
   return (
     <div className="control-container">
-      <h1 className="control-title">Control Panel</h1>
+      <h1 className="control-title">Bảng Điều Khiển</h1>
       
       {error && <div className="error-message">{error}</div>}
       
@@ -283,7 +292,7 @@ const Control = () => {
               disabled={!isLoaded}
               style={{ pointerEvents: isLoaded ? 'auto' : 'none' }}
             >
-              FIRE
+              BẮN
             </button>
           </div>
           <div className="control-col">
@@ -313,10 +322,10 @@ const Control = () => {
       </div>
 
       <div className="control-instructions">
-        <p>Use arrow keys or click buttons to control the gun tower</p>
-        <p>Press SPACE or click FIRE button to shoot</p>
-        <p>Hold to continue movement, release to stop</p>
-        <p>Or use voice command by clicking the microphone button</p>
+        <p>Sử dụng phím mũi tên hoặc nhấn nút để điều khiển súng</p>
+        <p>Nhấn SPACE hoặc nút BẮN để bắn</p>
+        <p>Giữ để di chuyển liên tục, thả ra để dừng</p>
+        <p>Hoặc sử dụng lệnh giọng nói bằng cách nhấn nút micro</p>
         <p>Các lệnh giọng nói: "lên", "xuống", "trái", "phải", "bắn", "dừng"</p>
       </div>
     </div>

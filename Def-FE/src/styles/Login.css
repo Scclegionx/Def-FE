@@ -3,27 +3,33 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  background: linear-gradient(135deg, #232526 0%, #414345 100%);
   padding: 20px;
 }
 
 .login-form {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 15px;
-  padding: 40px;
   width: 100%;
   max-width: 400px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #fff;
+  padding: 32px;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
 }
 
 .login-form h2 {
-  color: #fff;
+  margin: 0 0 24px 0;
+  font-size: 1.8rem;
+  color: #333;
   text-align: center;
-  margin-bottom: 30px;
-  font-size: 28px;
-  font-weight: 600;
+}
+
+.error-message {
+  background: #ff7675;
+  color: #fff;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  text-align: center;
 }
 
 .form-group {
@@ -32,87 +38,50 @@
 
 .form-group label {
   display: block;
-  color: #fff;
   margin-bottom: 8px;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 1rem;
+  color: #333;
 }
 
 .form-group input {
   width: 100%;
-  padding: 12px 15px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  color: #fff;
-  font-size: 14px;
-  transition: all 0.3s ease;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border 0.2s;
 }
 
 .form-group input:focus {
+  border-color: #636e72;
   outline: none;
-  border-color: #4a90e2;
-  background: rgba(255, 255, 255, 0.15);
 }
 
-.form-group input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.login-form button {
+button[type="submit"] {
   width: 100%;
   padding: 12px;
-  background: #4a90e2;
-  border: none;
-  border-radius: 8px;
+  background: #636e72;
   color: #fff;
-  font-size: 16px;
-  font-weight: 600;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 20px;
+  transition: background 0.2s;
 }
 
-.login-form button:hover {
-  background: #357abd;
-  transform: translateY(-2px);
+button[type="submit"]:hover {
+  background: #2d3436;
 }
 
-.login-form button:active {
-  transform: translateY(0);
-}
-
-/* Animation */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.login-form {
-  animation: fadeIn 0.5s ease-out;
-}
-
-/* Responsive */
+/* Responsive: form nhỏ lại trên mobile */
 @media (max-width: 480px) {
   .login-form {
-    padding: 30px 20px;
+    padding: 24px;
   }
-  
   .login-form h2 {
-    font-size: 24px;
+    font-size: 1.5rem;
   }
-  
   .form-group input {
-    padding: 10px 12px;
-  }
-  
-  .login-form button {
     padding: 10px;
   }
-} 
+}

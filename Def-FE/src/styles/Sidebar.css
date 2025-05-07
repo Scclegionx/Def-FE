@@ -1,0 +1,126 @@
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 240px;
+  height: 100vh;
+  background: linear-gradient(135deg, #232526 0%, #414345 100%);
+  color: #fff;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.08);
+  padding-bottom: 24px;
+  overflow: hidden;
+}
+
+.sidebar-header {
+  padding: 32px 24px 16px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  text-align: center;
+}
+
+.sidebar-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 0 0 8px 0;
+  letter-spacing: 1px;
+}
+
+.welcome-text {
+  font-size: 1rem;
+  color: #b2bec3;
+  margin: 0;
+}
+
+nav {
+  flex: 1;
+  margin-top: 24px;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  margin-bottom: 4px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.nav-link {
+  display: block;
+  width: 100%;
+  padding: 12px 24px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 1.05rem;
+  border: none;
+  background: none;
+  text-align: left;
+  border-radius: 0 20px 20px 0;
+  transition: background 0.2s, color 0.2s;
+  cursor: pointer;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  background: #636e72;
+  color: #ffeaa7;
+}
+
+.nav-dropdown {
+  width: 100%;
+}
+
+.dropdown-arrow {
+  float: right;
+  margin-left: 8px;
+  transition: transform 0.2s;
+}
+
+.dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+.dropdown-content {
+  background: #353b48;
+  border-radius: 0 0 8px 8px;
+  margin-top: 4px;
+  margin-left: 0;
+  padding-left: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  overflow: hidden;
+}
+
+.logout-button {
+  color: #d63031;
+  font-weight: bold;
+}
+
+.logout-button:hover {
+  background: #d63031;
+  color: #fff;
+}
+
+/* Responsive: sidebar nhỏ lại trên mobile */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100px;
+    padding: 0;
+  }
+  .sidebar-header {
+    padding: 16px 8px;
+  }
+  .sidebar-title {
+    font-size: 1rem;
+  }
+  .nav-link {
+    padding: 10px 12px;
+    font-size: 0.95rem;
+  }
+}

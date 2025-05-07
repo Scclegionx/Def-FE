@@ -1,23 +1,159 @@
-.control-button.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  pointer-events: none;
-  background-color: #cccccc;
+.control-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  background: #f5f6fa;
+  min-height: 100vh;
 }
 
-.fire-button:disabled {
-  opacity: 0.5;
+.control-title {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.error-message {
+  background: #ff7675;
+  color: #fff;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  text-align: center;
+  width: 100%;
+  max-width: 400px;
+}
+
+.control-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.control-row {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.control-col {
+  display: flex;
+  justify-content: center;
+}
+
+.control-button {
+  width: 80px;
+  height: 80px;
+  background: #636e72;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.control-button:hover {
+  background: #2d3436;
+}
+
+.control-button.active {
+  background: #d63031;
+  transform: scale(0.95);
+}
+
+.fire-button {
+  background: #d63031;
+  font-weight: bold;
+}
+
+.fire-button:hover {
+  background: #c0392b;
+}
+
+.fire-button.disabled {
+  background: #b2bec3;
   cursor: not-allowed;
-  pointer-events: none;
-  background-color: #cccccc;
 }
 
 .reload-button {
-  background-color: #4CAF50;
-  color: white;
+  background: #00b894;
   font-weight: bold;
 }
 
 .reload-button:hover {
-  background-color: #45a049;
-} 
+  background: #00a884;
+}
+
+.voice-control {
+  margin-top: 24px;
+  text-align: center;
+}
+
+.voice-button {
+  padding: 12px 24px;
+  background: #0984e3;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.voice-button:hover {
+  background: #0873c4;
+}
+
+.voice-button.recording {
+  background: #d63031;
+  animation: pulse 1.5s infinite;
+}
+
+.voice-command-result {
+  margin-top: 16px;
+  padding: 12px;
+  background: #dfe6e9;
+  border-radius: 4px;
+  color: #333;
+}
+
+.control-instructions {
+  margin-top: 24px;
+  text-align: center;
+  color: #636e72;
+  font-size: 0.9rem;
+}
+
+.control-instructions p {
+  margin: 8px 0;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Responsive: điều chỉnh kích thước nút trên mobile */
+@media (max-width: 480px) {
+  .control-button {
+    width: 60px;
+    height: 60px;
+    font-size: 1.2rem;
+  }
+  .control-row {
+    gap: 12px;
+  }
+}

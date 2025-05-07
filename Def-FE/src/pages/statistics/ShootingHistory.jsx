@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import shootHistoryService from '../../services/shootHistoryService';
+import '../../styles/ShootHis.css';
 
 const ShootingHistory = () => {
   const [history, setHistory] = useState([]);
@@ -41,17 +42,17 @@ const ShootingHistory = () => {
 
   // Tính toán thống kê
   const totalShots = history.length;
-  const hits = history.filter(record => record.status === 'success').length;
+  const hits = history.filter(record => record.status === 'Thành công').length;
   const hitRate = totalShots > 0 ? ((hits / totalShots) * 100).toFixed(1) : 0;
 
   const getResultClass = (status) => {
     if (!status) return '';
-    return status === 'success' ? 'hit' : 'miss';
+    return status === 'Thành công' ? 'hit' : 'miss';
   };
 
   const getResultText = (status) => {
     if (!status) return 'Chưa xác định';
-    return status === 'success' ? 'Trúng' : 'Trượt';
+    return status === 'Thành công' ? 'Thành công' : 'Thất bại';
   };
 
   return (
@@ -67,7 +68,7 @@ const ShootingHistory = () => {
           <p>{totalShots}</p>
         </div>
         <div className="summary-card">
-          <h3>Tỷ lệ trúng</h3>
+          <h3>Tỷ lệ thành công</h3>
           <p>{hitRate}%</p>
         </div>
         <div className="summary-card bullets-card">

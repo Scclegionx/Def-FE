@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
+import '../../styles/Sidebar.css';
 
 const Sidebar = () => {
   const location = useLocation();
@@ -20,7 +21,7 @@ const Sidebar = () => {
   return (
     <div className="sidebar">
       <div className="sidebar-header">
-        <h1 className="sidebar-title">Gun Tower Control</h1>
+        <h1 className="sidebar-title">Điều Khiển Súng</h1>
         {isLoggedIn && <p className="welcome-text">Xin chào, {username}</p>}
       </div>
       <nav>
@@ -29,18 +30,10 @@ const Sidebar = () => {
             <>
               <li>
                 <Link
-                  to="/"
-                  className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
-                >
-                  Dashboard
-                </Link>
-              </li>
-              <li>
-                <Link
                   to="/control"
                   className={`nav-link ${location.pathname === '/control' ? 'active' : ''}`}
                 >
-                  Control Panel
+                  Bảng Điều Khiển
                 </Link>
               </li>
               <li>
@@ -57,7 +50,7 @@ const Sidebar = () => {
                     className={`nav-link ${isStatsOpen ? 'active' : ''}`}
                     onClick={toggleStats}
                   >
-                    Statistics
+                    Thống Kê
                     <span className={`dropdown-arrow ${isStatsOpen ? 'open' : ''}`}>▼</span>
                   </button>
                   {isStatsOpen && (
@@ -66,19 +59,19 @@ const Sidebar = () => {
                         to="/statistics/shooting-history"
                         className={`nav-link ${location.pathname === '/statistics/shooting-history' ? 'active' : ''}`}
                       >
-                        Shooting History
+                        Lịch Sử Bắn
                       </Link>
-                      <Link
+                      {/* <Link
                         to="/statistics/ammo-status"
                         className={`nav-link ${location.pathname === '/statistics/ammo-status' ? 'active' : ''}`}
                       >
                         Ammo Status
-                      </Link>
+                      </Link> */}
                       <Link
                         to="/statistics/radar-history"
                         className={`nav-link ${location.pathname === '/statistics/radar-history' ? 'active' : ''}`}
                       >
-                        Radar History
+                        Lịch Sử Radar
                       </Link>
                     </div>
                   )}

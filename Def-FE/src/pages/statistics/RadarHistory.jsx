@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import radarHistoryService from '../../services/radarHistoryService';
+import '../../styles/RadarHis.css';
 
 const RadarHistory = () => {
   const [history, setHistory] = useState([]);

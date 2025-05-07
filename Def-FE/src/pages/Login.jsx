@@ -12,7 +12,7 @@ const Login = () => {
 
   useEffect(() => {
     if (authService.isAuthenticated()) {
-      navigate('/');
+      navigate('/control');
     }
   }, [navigate]);
 
@@ -27,7 +27,7 @@ const Login = () => {
         // Kết nối WebSocket sau khi đăng nhập thành công
         try {
           await wsService.connect('ws://192.168.3.173:8080');
-          navigate('/');
+          navigate('/control');
         } catch (error) {
           console.error('Lỗi kết nối WebSocket:', error);
           setError('Lỗi kết nối WebSocket');
