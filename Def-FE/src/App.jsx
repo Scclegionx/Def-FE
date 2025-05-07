@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Dashboard from './pages/Dashboard';
 import Control from './pages/Control';
 import ShootingHistory from './pages/statistics/ShootingHistory';
 import RadarHistory from './pages/statistics/RadarHistory';
@@ -22,14 +21,6 @@ function App() {
         <div className="main-content">
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
             <Route
               path="/control"
               element={
@@ -62,7 +53,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route path="*" element={<Navigate to="/" />} />
+            <Route path="*" element={<Navigate to="/control" />} />
           </Routes>
         </div>
       </div>
